@@ -91,25 +91,25 @@ make -C bao-hypervisor CROSS_COMPILE=riscv64-unknown-elf- PLATFORM=cva6 CONFIG=c
 
 5. Build OpenSBI and generate firmware payload
 
-```
+```bash
 make -C opensbi CROSS_COMPILE=riscv64-unknown-linux-gnu- PLATFORM=fpga/ariane FW_PAYLOAD=y FW_PAYLOAD_PATH=../bao-hypervisor/bin/cva6/cva6-baremetal/bao.bin
 ```
 
 ### Copying the image to an SD card
 
 1. Insert an SD card into your computer and ***carefully*** identify the dev file associated to your SD Card (e.g., /dev/sda, /dev/mmcblk).
-```
+```bash
 sudo fdisk -l
 ```
 
 2. Format the SD card. Replace *\<dev_file\>* with the dev file you identfied in step 1. 
-```
+```bash
 sudo sgdisk --clear --new=1:2048:+4M --new=2 --typecode=1:3000 --typecode=2:8300 <dev_file> -g
 ```
 :information_source: To speed up the loading of the image, the BOOT (first) partition of the SD card is formatted to 4 MiB.
 
 3. Copy the binary file to the SD card. Again, replace *\<dev_file\>* with the dev file you identfied in step 1. 
-```
+```bash
 sudo dd if=opensbi/build/platform/fpga/ariane/firmware/fw_payload.bin of=<dev_file> oflag=sync bs=1M
 ```
 
