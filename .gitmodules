@@ -1,0 +1,6 @@
+[submodule "opensbi"]
+	path = opensbi
+	url = git@github.com:riscv-software-src/opensbi.git
+[submodule "bao-hypervisor"]
+	path = bao-hypervisor
+	url = git@github.com:bao-project/bao-hypervisor.git
