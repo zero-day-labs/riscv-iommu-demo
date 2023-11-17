@@ -21,7 +21,6 @@ struct platform platform = {
         .plic_base = 0xc000000,
         .iommu = {
             .base = 0x50010000,
-            // .mode = 0x1,
             .mode = 0x2,
             .fq_irq_id = 10
         }

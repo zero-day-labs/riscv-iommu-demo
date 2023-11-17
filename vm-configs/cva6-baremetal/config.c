@@ -67,39 +67,15 @@ struct config config = {
                         .interrupt_num = 0,
                         .interrupts = (irqid_t[]) {}
                     },
-                    {   // iDMA[0]
+                    {   // iDMA
                         .pa = 0x50000000,
                         .va = 0x50000000,
                         .size = 0x00001000,
                         .interrupt_num = 0,
-                        .interrupts = (irqid_t[]) {},   // 8, 9
+                        .interrupts = (irqid_t[]) {},
                         .id = 1
                     },
-                    // {   // iDMA[1]
-                    //     .pa = 0x50001000,
-                    //     .va = 0x50001000,
-                    //     .size = 0x00001000,
-                    //     .interrupt_num = 0,
-                    //     .interrupts = (irqid_t[]) {},   // 10, 11
-                    //     .id = 2
-                    // },
-                    // {   // iDMA[2]
-                    //     .pa = 0x50002000,
-                    //     .va = 0x50002000,
-                    //     .size = 0x00001000,
-                    //     .interrupt_num = 0,
-                    //     .interrupts = (irqid_t[]) {},   // 12, 13
-                    //     .id = 3
-                    // },
-                    // {   // iDMA[3]
-                    //     .pa = 0x50003000,
-                    //     .va = 0x50003000,
-                    //     .size = 0x00001000,
-                    //     .interrupt_num = 0,
-                    //     .interrupts = (irqid_t[]) {},   // 14, 15
-                    //     .id = 4
-                    // },
-                    {   // IOMMU (test only)
+                    {   // IOMMU (demo only)
                         .pa = 0x50010000,   
                         .va = 0x50010000,  
                         .size = 0x00001000,  

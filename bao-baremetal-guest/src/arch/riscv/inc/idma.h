@@ -69,9 +69,6 @@ extern "C" {
 
 #define DMA_FRONTEND_INTF_ALL_BUTTONS_MASK  0x1FULL
 
-#define DMA_FRONTEND_INT_SW_OFF             5
-#define DMA_FRONTEND_INT_SW_MASK            (0xFFULL << DMA_FRONTEND_INT_SW_OFF)
-
 // iDMA base physical address
 #define DMA_SRC_ADDR(idx)      (DMA_BASE(idx) + DMA_FRONTEND_SRC_ADDR_REG_OFFSET)
 #define DMA_DST_ADDR(idx)      (DMA_BASE(idx) + DMA_FRONTEND_DST_ADDR_REG_OFFSET)
