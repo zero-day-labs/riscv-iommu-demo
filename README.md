@@ -37,13 +37,13 @@ In order to build and run the demo you need to download/install the following to
 
 ## Setting up the Demo
 
-The following steps will guide you through the steps to configure and run the demo.
+The following steps will guide you through to configure and run the demo.
 
 First of all, clone this repository and load all git submodules:
 
 ```bash
 git clone git@github.com:zero-day-labs/riscv-iommu-demo.git
-
+cd riscv-iommu-demo
 git submodule update --init --recursive
 ```
 
@@ -70,13 +70,13 @@ After completing, you can find the bitstream in **cva6/corev_apu/fpga/work-fpga/
 make -C bao-baremetal-guest CROSS_COMPILE=riscv64-unknown-elf- PLATFORM=cva6
 ```
 
-2. In the [config.c](./vm-configs/cva6-baremetal/config.c) file, line 3, setup the **absolute** path to the VM image generated in **bao-baremetal-guest/build/cva6/baremetal.bin**, i.e.:
+2. In the VM configuration ([config.c](./vm-configs/cva6-baremetal/config.c) file), line 3, configure the **absolute** path to the VM image generated in **bao-baremetal-guest/build/cva6/baremetal.bin**, i.e.:
 
 ```
 VM_IMAGE(baremetal_image, XSTR(/absolute/path/to/baremetal.bin));
 ```
 
-3. Copy the VM configuration and the platform configuration to Bao's workspace
+3. Copy the VM configuration and the platform configuration to the Bao hypervisor directory
 
 ```bash
 cp -R vm-configs/* bao-hypervisor/configs
@@ -106,7 +106,7 @@ sudo fdisk -l
 ```bash
 sudo sgdisk --clear --new=1:2048:+4M --new=2 --typecode=1:3000 --typecode=2:8300 <dev_file> -g
 ```
-:information_source: To speed up the loading of the image, the BOOT (first) partition of the SD card is formatted to 4 MiB.
+:information_source: To speed up the loading of the image, the first (BOOT) partition of the SD card is formatted to 4 MiB.
 
 3. Copy the binary file to the SD card. Again, replace *\<dev_file\>* with the dev file you identfied in step 1. 
 ```bash
