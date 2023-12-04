@@ -7,3 +7,6 @@
 [submodule "cva6"]
 	path = cva6
 	url = git@github.com:zero-day-labs/cva6.git
+[submodule "linux"]
+	path = linux
+	url = git@github.com:malejo97/linux.git
