@@ -204,7 +204,9 @@ The Guest VM will start executing immediately after the image is loaded to the b
 You have the option to attack Bao or OpenSBI (firmware), with the IOMMU enabled or disabled. When the IOMMU is enabled, Bao will print fault messages (warnings) for each DMA transfer.
 
 - Attacking OpenSBI
+
 ![](doc/opensbi.gif)
 
 - Attacking Bao
+
 ![](doc/bao.gif)
