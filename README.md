@@ -110,6 +110,7 @@ The output files (**fw_payload.bin** and **fw_payload.elf**) should be in `opens
 ```bash
 make -C bao-baremetal-guest CROSS_COMPILE=riscv64-unknown-elf- PLATFORM=cva6
 ```
+>:information_source: You can skip steps 2 and 3 if you have previously built **Demo #2**
 
 2. In the VM configuration ([vm-configs/cva6-baremetal/config.c](./vm-configs/cva6-baremetal/config.c) file), line 3, set the **absolute** path to the VM image generated in **bao-baremetal-guest/build/cva6/baremetal.bin**, i.e.:
 
@@ -181,11 +182,12 @@ You can perform DMA transfers using the user-space application provided within t
 
 This application will copy the provided word into the DMA source buffer, and start two subsequent DMA transfers: one to read the word from the source buffer, and another to write it to the DMA destination buffer. At the end, the application prints the provided word and the contents of the destination buffer.
 
-Additionally, you can configure the DMA driver to use unmapped addresses to see what happens:
+Additionally, you can configure the DMA driver to use unmapped addresses and see what happens:
 
 ```
 echo 1 > /sys/module/idma/parameters/use_unmapped_addr
-
+```
+```
 /etc/iommu_test.elf <short_word>
 ```
 
