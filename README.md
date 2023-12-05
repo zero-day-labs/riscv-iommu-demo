@@ -7,13 +7,15 @@ This work is licensed under the Apache-2.0 License. See the [LICENSE](./LICENSE)
 ## Table of Contents
 
 - [About the Demo](#about-the-demo)
-- [Tools and Versions](#tools-and-versions)
+    - [Tools and Versions](#tools-and-versions)
 - [Synthesizing the RTL Design](#synthesizing-the-rtl-design)
 - [Building the Demos](#building-the-demos)
-    - [Demo #1: Linux w/ IOMMU Driver](#demo-1-linux-w-iommu-driver)
+    - [Demo #1: Linux w/ IOMMU](#demo-1-linux-w-risc-v-iommu)
     - [Demo #2: Bao Hypervisor and Guest Attacker](#demo-2-bao-hypervisor-and-guest-attacker)
 - [Copying the image to an SD card](#copying-the-image-to-an-sd-card)
 - [Running the Demo](#running-the-demo)
+    - [Running Demo #1: Linux w/ IOMMU](#running-demo-1-linux-w-iommu)
+    - [Running Demo #2: Bao Hypervisor and Guest Attacker](#running-demo-2-bao-hypervisor-and-guest-attacker)
 
 ***
 
@@ -25,7 +27,7 @@ This repository contains source code and instructions to build and run two funct
 
 - In **Demo #2**, we show the operation of the IOMMU within a virtualized environment in a more interactive way. In this demo, the DMA device is programmed to tamper critical memory regions of one of two targets: [Bao hypervisor](https://github.com/bao-project/bao-hypervisor) or [OpenSBI](https://github.com/riscv-software-src/opensbi) (firmware). The IOMMU IP is enabled by default, but it can be disabled to let the user see the consequences. The user navigates through the demo using the push buttons in the board, and the output is printed to the console.
 
-## Tools and Versions
+### Tools and Versions
 
 To build and run the demo we used the following tools:
 
@@ -57,6 +59,7 @@ Then, to synthesize the RTL design of the CVA6-based SoC with the IOMMU IP and g
 ```bash
 make -C cva6 fpga
 ```
+:warning: In order to synthesize the RTL design, you must have the required licenses installed in Vivado. Otherwise, the run will fail.
 
 After completing, you can find the bitstream in **cva6/corev_apu/fpga/work-fpga/ariane_xilinx.bit**
 
@@ -152,4 +155,30 @@ sudo dd if=opensbi/build/platform/fpga/ariane/firmware/fw_payload.bin of=<dev_fi
 5. Link the Vivado Hardware Manager to the board.
 6. Program the device with the generated bitstream (**cva6/corev_apu/fpga/work-fpga/ariane_xilinx.bit**).
 
-Once programming is finished (around 10s), the boot image will be copied from the SD card to the board. Then, the baremetal VM with the demo will start running atop Bao.
+Once programming is finished (around 10s), the boot image will be copied from the SD card to the board. Then, the demo will start executing.
+
+### Running Demo #1: Linux w/ IOMMU
+
+Note the **iommu** and **idma** messages in the Linux boot log. We create two DMA mappings for the device: one for reads (source) and another for writes (destination). After the boot process is complete, login using the word "**root**" as user and password.
+
+You can perform DMA transfers using the user-space application provided within the filesystem:
+
+```
+/etc/iommu_test.elf <short_word>
+```
+
+This application will copy the provided word into the DMA source buffer, and start two subsequent DMA transfers: one to read the word from the source buffer, and another to write it to the DMA destination buffer. At the end, the application prints the provided word and the contents of the destination buffer.
+
+Additionally, you can configure the DMA driver to use unmapped addresses to see what happens:
+
+```
+echo 1 > /sys/module/idma/parameters/use_unmapped_addr
+
+/etc/iommu_test.elf <short_word>
+```
+
+A page fault is generated, and the IOMMU raises an interrupt to notice Linux about the error.
+
+### Running Demo #2: Bao Hypervisor and Guest Attacker
+
+The Guest VM will start executing immediately after the image is loaded to the board. The console guides the user to navigate through the demo using the board push buttons. You have the option to attack Bao or OpenSBI, with the IOMMU enabled or disabled.
