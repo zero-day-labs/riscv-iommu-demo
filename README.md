@@ -65,6 +65,16 @@ After completing, you can find the bitstream in **cva6/corev_apu/fpga/work-fpga/
 
 ## Building the demos
 
+Before alternating between demos, ensure that all components are clean to build
+
+```bash
+make -C linux ARCH=riscv mrproper && \
+make -C linux/tools/lloader clean && \
+make -C bao-baremetal-guest clean && \
+make -C bao-hypervisor clean && \
+make -C opensbi clean
+```
+
 ### Demo #1: Linux w/ RISC-V IOMMU
 
 1. Build the Linux kernel with the RISC-V IOMMU driver.
@@ -77,14 +87,13 @@ make -C linux ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- KBUILD_DEFCONFIG=defco
 2. Compile the device tree
 
 ```bash
-cd linux/arch/riscv/boot/dts/cva6 &&
-dtc cva6-ariane-minimal.dts > cva6-ariane-minimal.dtb
+cd linux/arch/riscv/boot/dts/cva6 && dtc cva6-ariane-minimal.dts > cva6-ariane-minimal.dtb
 ```
 
-3. Concatenate the DTB and the Linux image
+3. Go back to the top directory of the repo and concatenate the DTB and the Linux image
 
 ```bash
-make -C linux/tools/lloader CROSS_COMPILE=riscv64-unknown-elf- ARCH=rv64 IMAGE=../../build/arch/riscv/boot/Image DTB=../../arch/riscv/boot/dts/cva6/cva6-ariane-minimal.dtb TARGET=linux-rv64-cva6
+cd ../../../../../.. && make -C linux/tools/lloader CROSS_COMPILE=riscv64-unknown-elf- ARCH=rv64 IMAGE=../../build/arch/riscv/boot/Image DTB=../../arch/riscv/boot/dts/cva6/cva6-ariane-minimal.dtb TARGET=linux-rv64-cva6
 ```
 
 4. Build OpenSBI and generate firmware payload
@@ -92,6 +101,7 @@ make -C linux/tools/lloader CROSS_COMPILE=riscv64-unknown-elf- ARCH=rv64 IMAGE=.
 ```bash
 make -C opensbi CROSS_COMPILE=riscv64-unknown-linux-gnu- PLATFORM=fpga/ariane FW_PAYLOAD=y FW_PAYLOAD_PATH=../linux/tools/lloader/linux-rv64-cva6.bin
 ```
+The output files (**fw_payload.bin** and **fw_payload.elf**) should be in `opensbi/build/platform/fpga/ariane/firmware/`
 
 ### Demo #2: Bao Hypervisor and Guest Attacker
 
@@ -101,7 +111,7 @@ make -C opensbi CROSS_COMPILE=riscv64-unknown-linux-gnu- PLATFORM=fpga/ariane FW
 make -C bao-baremetal-guest CROSS_COMPILE=riscv64-unknown-elf- PLATFORM=cva6
 ```
 
-2. In the VM configuration ([config.c](./vm-configs/cva6-baremetal/config.c) file), line 3, set the **absolute** path to the VM image generated in **bao-baremetal-guest/build/cva6/baremetal.bin**, i.e.:
+2. In the VM configuration ([vm-configs/cva6-baremetal/config.c](./vm-configs/cva6-baremetal/config.c) file), line 3, set the **absolute** path to the VM image generated in **bao-baremetal-guest/build/cva6/baremetal.bin**, i.e.:
 
 ```
 VM_IMAGE(baremetal_image, XSTR(/absolute/path/to/baremetal.bin));
@@ -110,7 +120,7 @@ VM_IMAGE(baremetal_image, XSTR(/absolute/path/to/baremetal.bin));
 3. Copy the VM configuration and the platform configuration to the Bao hypervisor directory
 
 ```bash
-cp -R vm-configs/* bao-hypervisor/configs
+cp -R vm-configs/* bao-hypervisor/configs && \
 cp -R plat-configs/* bao-hypervisor/src/platform/
 ```
 
@@ -125,6 +135,8 @@ make -C bao-hypervisor CROSS_COMPILE=riscv64-unknown-elf- PLATFORM=cva6 CONFIG=c
 ```bash
 make -C opensbi CROSS_COMPILE=riscv64-unknown-linux-gnu- PLATFORM=fpga/ariane FW_PAYLOAD=y FW_PAYLOAD_PATH=../bao-hypervisor/bin/cva6/cva6-baremetal/bao.bin
 ```
+
+The output files (**fw_payload.bin** and **fw_payload.elf**) should be in `opensbi/build/platform/fpga/ariane/firmware/`
 
 ## Copying the image to an SD card
 
