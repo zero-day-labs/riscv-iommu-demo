@@ -172,6 +172,8 @@ Once programming is finished (around 10s), the boot image will be copied from th
 
 ### Running Demo #1: Linux w/ IOMMU
 
+![](doc/linux_success.gif)
+
 Note the **iommu** and **idma** messages in the Linux boot log. We create two DMA mappings for the device: one for reads (source) and another for writes (destination). After the boot process is complete, login using the word "**root**" as user and password.
 
 You can perform DMA transfers using the user-space application provided within the filesystem:
@@ -182,6 +184,8 @@ You can perform DMA transfers using the user-space application provided within t
 
 This application will copy the provided word into the DMA source buffer, and start two subsequent DMA transfers: one to read the word from the source buffer and another to write it to the DMA destination buffer. At the end, the application prints the provided word and the contents of the destination buffer.
 
+![](doc/linux_error.gif)
+
 Additionally, you can configure the DMA driver to use unmapped addresses and see what happens:
 
 ```
@@ -191,8 +195,16 @@ echo 1 > /sys/module/idma/parameters/use_unmapped_addr
 /etc/iommu_test.elf <short_word>
 ```
 
-A page fault is generated, and the IOMMU raises an interrupt to notice Linux about the error.
+A page fault is generated, and the IOMMU raises an interrupt to notice Linux about the error. The fault record include relevant parameters of the DMA transfer (e.g., IO Virtual Address, device ID, fault code).
 
 ### Running Demo #2: Bao Hypervisor and Guest Attacker
 
-The Guest VM will start executing immediately after the image is loaded to the board. The console guides the user to navigate through the demo using the board push buttons. You have the option to attack Bao or OpenSBI, with the IOMMU enabled or disabled.
+The Guest VM will start executing immediately after the image is loaded to the board. The console will guide you through the demo using the board push buttons. 
+
+You have the option to attack Bao or OpenSBI (firmware), with the IOMMU enabled or disabled. When the IOMMU is enabled, Bao will print fault messages (warnings) for each DMA transfer.
+
+- Attacking OpenSBI
+![](doc/opensbi.gif)
+
+- Attacking Bao
+![](doc/bao.gif)
