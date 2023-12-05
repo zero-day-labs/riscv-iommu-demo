@@ -21,11 +21,11 @@ This work is licensed under the Apache-2.0 License. See the [LICENSE](./LICENSE)
 
 ## About the Demo
 
-This repository contains source code and instructions to build and run two functional demos of the [RISC-V IOMMU IP](https://github.com/zero-day-labs/riscv-iommu) developed by the Zero-Day Labs team. Both demos are carried out in a Genesys2 FPGA board, and run atop a CVA6-based SoC with support for the RISC-V Hypervisor extension, integrating one [DMA device](https://github.com/pulp-platform/iDMA) and the RISC-V IOMMU IP. 
+This repository contains source code and instructions to build and run two functional demos of the [RISC-V IOMMU IP](https://github.com/zero-day-labs/riscv-iommu) developed by the Zero-Day Labs. Both demos are carried out in a Genesys2 FPGA board, and run atop a CVA6-based SoC with support for the RISC-V Hypervisor extension, integrating one [DMA device](https://github.com/pulp-platform/iDMA) and the RISC-V IOMMU IP. 
 
-- **Demo #1** consists of a tutorial to run Linux atop the referred platform, using the RISC-V IOMMU Linux driver developed by the RISC-V IOMMU task group. We provide a simple application to issue DMA transfers using both mapped and unmapped addresses.
+- **Demo #1** consists of a tutorial to run Linux atop the target platform, using the RISC-V IOMMU Linux driver developed by the RISC-V IOMMU task group. We provide a simple application to issue DMA transfers using both mapped and unmapped addresses.
 
-- In **Demo #2**, we show the operation of the IOMMU within a virtualized environment in a more interactive way. In this demo, the DMA device is programmed to tamper critical memory regions of one of two targets: [Bao hypervisor](https://github.com/bao-project/bao-hypervisor) or [OpenSBI](https://github.com/riscv-software-src/opensbi) (firmware). The IOMMU IP is enabled by default, but it can be disabled to let the user see the consequences. The user navigates through the demo using the push buttons in the board, and the output is printed to the console.
+- In **Demo #2**, we show the operation of the IOMMU within a virtualized environment. In this demo, the DMA device is programmed to tamper critical memory regions of higher privileged SW: [Bao hypervisor](https://github.com/bao-project/bao-hypervisor) or [OpenSBI](https://github.com/riscv-software-src/opensbi) (firmware). The IOMMU IP is enabled by default, but it can be disabled to demonstrate the side-effects (for system level isolation) of the absense of the IOMMU IP. The user navigates through the demo using the push buttons in the board, and the output is printed to the console.
 
 ### Tools and Versions
 
@@ -49,7 +49,7 @@ cd riscv-iommu-demo
 git submodule update --init --recursive
 ```
 
-As both demos use the same hardware design, the first step is to synthesize the RTL code using Vivado. For this purpose, you need to point the `RISCV` environment variable to the path where your [riscv-tools](https://github.com/riscv-software-src/riscv-tools) instalation is located.
+Both demos use the same hardware design. So, the first step is to synthesize the RTL code using Vivado. For this purpose, you need to point the `RISCV` environment variable to the path where your [riscv-tools](https://github.com/riscv-software-src/riscv-tools) instalation is located.
 
 ```bash
 export RISCV=/path/to/riscv_tools
@@ -61,11 +61,11 @@ make -C cva6 fpga
 ```
 :warning: In order to synthesize the RTL design, you must have the required licenses installed in Vivado. Otherwise, the run will fail.
 
-After completing, you can find the bitstream in **cva6/corev_apu/fpga/work-fpga/ariane_xilinx.bit**
+At the end, the bitstream is located at **cva6/corev_apu/fpga/work-fpga/ariane_xilinx.bit**
 
 ## Building the demos
 
-Before alternating between demos, ensure that all components are clean to build
+Before changing the target demo, make sure to clean the build:
 
 ```bash
 make -C linux ARCH=riscv mrproper && \
@@ -77,26 +77,26 @@ make -C opensbi clean
 
 ### Demo #1: Linux w/ RISC-V IOMMU
 
-1. Build the Linux kernel with the RISC-V IOMMU driver.
+1. Build the Linux kernel with the RISC-V IOMMU driver:
 
 ```bash
 make -C linux ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- KBUILD_DEFCONFIG=defconfig O=build -j$(nproc) defconfig Image
 ```
 :information_source: We provide a pre-built filesystem generated with Buildroot in [linux/fs/cva6/](./linux/fs/cva6/). This FS is passed to the Kernel in the build configuration files, and contains a user-space application to perform DMA transfers within Linux
 
-2. Compile the device tree
+2. Compile the device tree:
 
 ```bash
 cd linux/arch/riscv/boot/dts/cva6 && dtc cva6-ariane-minimal.dts > cva6-ariane-minimal.dtb
 ```
 
-3. Go back to the top directory of the repo and concatenate the DTB and the Linux image
+3. Go back to the top directory of the repo and merge the DTB with the Linux image:
 
 ```bash
 cd ../../../../../.. && make -C linux/tools/lloader CROSS_COMPILE=riscv64-unknown-elf- ARCH=rv64 IMAGE=../../build/arch/riscv/boot/Image DTB=../../arch/riscv/boot/dts/cva6/cva6-ariane-minimal.dtb TARGET=linux-rv64-cva6
 ```
 
-4. Build OpenSBI and generate firmware payload
+4. Build OpenSBI and generate the payload firmware:
 
 ```bash
 make -C opensbi CROSS_COMPILE=riscv64-unknown-linux-gnu- PLATFORM=fpga/ariane FW_PAYLOAD=y FW_PAYLOAD_PATH=../linux/tools/lloader/linux-rv64-cva6.bin
@@ -105,7 +105,7 @@ The output files (**fw_payload.bin** and **fw_payload.elf**) should be in `opens
 
 ### Demo #2: Bao Hypervisor and Guest Attacker
 
-1. Build the baremetal guest
+1. Build the baremetal guest:
 
 ```bash
 make -C bao-baremetal-guest CROSS_COMPILE=riscv64-unknown-elf- PLATFORM=cva6
@@ -118,20 +118,20 @@ make -C bao-baremetal-guest CROSS_COMPILE=riscv64-unknown-elf- PLATFORM=cva6
 VM_IMAGE(baremetal_image, XSTR(/absolute/path/to/baremetal.bin));
 ```
 
-3. Copy the VM configuration and the platform configuration to the Bao hypervisor directory
+3. Copy the VM configuration and the platform configuration to the Bao hypervisor directory:
 
 ```bash
 cp -R vm-configs/* bao-hypervisor/configs && \
 cp -R plat-configs/* bao-hypervisor/src/platform/
 ```
 
-4. Build Bao
+4. Build Bao:
 
 ```bash
 make -C bao-hypervisor CROSS_COMPILE=riscv64-unknown-elf- PLATFORM=cva6 CONFIG=cva6-baremetal CONFIG_BUILTIN=y
 ```
 
-5. Build OpenSBI and generate firmware payload
+5. Build OpenSBI and generate the payload firmware:
 
 ```bash
 make -C opensbi CROSS_COMPILE=riscv64-unknown-linux-gnu- PLATFORM=fpga/ariane FW_PAYLOAD=y FW_PAYLOAD_PATH=../bao-hypervisor/bin/cva6/cva6-baremetal/bao.bin
@@ -141,7 +141,7 @@ The output files (**fw_payload.bin** and **fw_payload.elf**) should be in `opens
 
 ## Copying the image to an SD card
 
-After building the corresponding demo, you have to copy the output binary file to an SD card in order to run the demo in the *Genesys2* board
+After building the corresponding demo, you have to copy the output binary file to an SD card in order to run the demo on the *Genesys2* board
 
 1. Insert an SD card into your computer and ***carefully*** identify the dev file associated to your SD Card (e.g., /dev/sda, /dev/mmcblk).
 ```bash
@@ -180,7 +180,7 @@ You can perform DMA transfers using the user-space application provided within t
 /etc/iommu_test.elf <short_word>
 ```
 
-This application will copy the provided word into the DMA source buffer, and start two subsequent DMA transfers: one to read the word from the source buffer, and another to write it to the DMA destination buffer. At the end, the application prints the provided word and the contents of the destination buffer.
+This application will copy the provided word into the DMA source buffer, and start two subsequent DMA transfers: one to read the word from the source buffer and another to write it to the DMA destination buffer. At the end, the application prints the provided word and the contents of the destination buffer.
 
 Additionally, you can configure the DMA driver to use unmapped addresses and see what happens:
 
